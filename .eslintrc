@@ -1,0 +1,19 @@
+{
+    "env": {
+        "node": true
+    },
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+        "@typescript-eslint"
+    ],
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended"
+        // "@luckbox/eslint-rules/typescript/backend.js"
+    ],
+    "rules": {
+        "no-console": 1
+    }
+}
