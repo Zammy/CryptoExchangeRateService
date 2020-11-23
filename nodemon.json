@@ -4,5 +4,6 @@
     ],
     "ext": ".ts,.js",
     "ignore": [],
-    "exec": "ts-node ./src/index.ts"
+    "exec_run_this_is_not_used__thanks_json_for_not_supporting_comments": "ts-node ./src/index.ts",
+    "exec" : "npm run compile"
 }

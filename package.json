@@ -4,11 +4,11 @@
   "description": " Convert crypto currencies to fiat money with most recent exchange rate. ",
   "main": "src/index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "run": "node build/index.js",
     "compile": "tsc",
-    "start:dev": "npx nodemon",
-    "build:clean": "rimraf ./build && npm run compile",
-    "start": "npm run compile && node build/index.js",
+    "compile:watch": "npx nodemon",
+    "compile:clean": "rimraf ./build && npm run compile",
+    "compile:run": "npm run compile && node build/index.js",
     "lint": "eslint . --ext .ts",
     "lint-and-fix": "eslint . --ext .ts --fix"
   },
