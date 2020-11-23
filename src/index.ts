@@ -1,5 +1,4 @@
 import e, * as express from 'express';
-import * as fs from 'fs';
 import * as fsPromises from 'fs/promises';
 import { HttpRequest } from "./HttpRequest";
 
@@ -10,9 +9,18 @@ const SUPPORTED_CURRENCIES = ["USD", "EUR", "BGN", "AFN", "AMD"];
 const coingeckoFilename = "coingecko.json";
 const currencyLayerFilename = "currency_layer.json";
 
-let extraFiatCurrencyExchangeRatesFromUSD: {};
-let currencyExchangeRates: {};
+type MoneyType = 'crypto' | 'fiat';
+interface jsObj { [key: string]: any };
+interface RateInfo {
+    "name": string,
+    "unit": string,
+    "value": number,
+    "type": MoneyType
+}
 
+let extraFiatCurrencyExchangeRatesFromUSD: { [key: string]: number };
+let currencyExchangeRates: { 'rates': { [key: string]: RateInfo } };
+let lastUpdate = new Date();
 
 function loadCache(cacheFileName: string): Promise<string | void> {
     return fsPromises.readFile('./cache/' + cacheFileName, { encoding: "utf-8" })
@@ -27,7 +35,7 @@ async function persistCache(cacheFileName: string, data: string): Promise<void> 
 loadCache(coingeckoFilename)
     .then(cache => {
         if (cache) {
-            currencyExchangeRates = cache;
+            currencyExchangeRates = JSON.parse(cache);
             console.log(coingeckoFilename + " cache updated");
         }
     }, null);
@@ -36,7 +44,7 @@ loadCache(coingeckoFilename)
 loadCache(currencyLayerFilename)
     .then(cache => {
         if (cache) {
-            currencyExchangeRates = cache;
+            extraFiatCurrencyExchangeRatesFromUSD = JSON.parse(cache);
             console.log(currencyLayerFilename + " cache updated");
         }
     }, null);
@@ -58,35 +66,51 @@ async function loadCurrencyLayerAPI() {
 
 async function loadCoingeckoAPI() {
     currencyExchangeRates = await HttpRequest.get('https://api.coingecko.com/api/v3/exchange_rates');
-
+    lastUpdate = new Date();
     await persistCache(coingeckoFilename, JSON.stringify(currencyExchangeRates));
 }
 
-// loadCurrencyLayerAPI().then(() => console.log("Successfully loaded fiat currencies from Currency Layer " + new Date()));
-loadCoingeckoAPI()
-    .then(() => console.log("Successfully laoded crypto currencies exchange rates from CoinGecko " + new Date()))
-    .finally(() => console.log("END"));
+// loadCurrencyLayerAPI()
+//     .catch(e => console.error(e))
+//     .then(() => console.log("Successfully loaded fiat currencies from Currency Layer " + new Date()));
 
+// loadCoingeckoAPI()
+//     .catch(e => console.error(e))
+//     .then(() => console.log("Successfully loaded crypto currencies exchange rates from CoinGecko " + new Date()));
 
 
 app.get('/exchange', async (req, res) => {
     const query = req.query;
-    const crypto = query["crypto"] as string;
-    const fiat = query["fiat"] as string;
+    const crypto = (query["crypto"] as string).toLocaleLowerCase();
+    const fiat = (query["fiat"] as string).toLocaleLowerCase();
     let forceLatest: boolean = false;
     if (query["forceLatest"]) {
         forceLatest = (query["forceLatest"] as string).toLowerCase() == "true" ? true : false;
     }
 
+    let exchangeRate: number = -1;
 
-    const exchangeRate = 1.241455;
+    //TODO: really? actually we need to validate crypto also if error we should error back through API
+    let cryptoInfo: RateInfo = currencyExchangeRates.rates[crypto];
 
-    const lastUpdate = new Date(); //store in-memory for now?
+    let fiatInfo: RateInfo | undefined = currencyExchangeRates.rates[fiat];
+
+    if (fiatInfo) {
+        exchangeRate = fiatInfo.value / cryptoInfo.value;
+    } else {
+        let fiatInfoUsd = currencyExchangeRates.rates['usd'];
+
+        let key = 'USD' + fiat.toUpperCase();
+        let fiatExchangeRateToUSD = extraFiatCurrencyExchangeRatesFromUSD[key] as number;
+
+        exchangeRate = fiatExchangeRateToUSD * fiatInfoUsd.value / cryptoInfo.value;
+    }
+
     res.send({
-        crypto, fiat, exchangeRate, lastUpdate
+        'crypto': crypto, 'fiat': fiat, 'exchangeRate': exchangeRate, 'lastUpdate': lastUpdate
     });
 });
 
 app.listen(port, () => {
     console.log("Server is listening");
-});
+});  
