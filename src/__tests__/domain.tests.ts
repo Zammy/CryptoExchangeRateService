@@ -1,14 +1,14 @@
-import { UseCases, IExchangeRateDataSources } from "../Domain";
+import { UseCases, IExchangeRateRepository } from "../Domain";
 
 describe("Domain tests", () => {
   const ethCode = 'eth';
   const usdCode = 'usd';
   const bgnCode = 'bgn';
-  let cryptoDataSource: IExchangeRateDataSources;
-  let fiatDataSource: IExchangeRateDataSources;
+  let cryptoDataSource: IExchangeRateRepository;
+  let fiatDataSource: IExchangeRateRepository;
 
   beforeEach(() => {
-    cryptoDataSource = (new class MockData implements IExchangeRateDataSources {
+    cryptoDataSource = (new class MockData implements IExchangeRateRepository {
       getExchangeRate(currencyCode: string): number {
         if (currencyCode === ethCode)
           return 40;
@@ -20,7 +20,7 @@ describe("Domain tests", () => {
         return currencyCode === ethCode || currencyCode === usdCode;
       }
     });
-    fiatDataSource = (new class MockData implements IExchangeRateDataSources {
+    fiatDataSource = (new class MockData implements IExchangeRateRepository {
       getExchangeRate(currencyCode: string): number {
         if (currencyCode === bgnCode)
           return 2;

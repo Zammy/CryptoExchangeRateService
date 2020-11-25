@@ -113,3 +113,6 @@ cache/
 
 #Remove test covarage directory
 /coverage
+
+#Config file
+config.json
