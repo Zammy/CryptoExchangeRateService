@@ -5,6 +5,7 @@
   "main": "src/index.ts",
   "scripts": {
     "test": "jest",
+    "test:watch": "jest --watch",
     "run": "node build/index.js",
     "compile": "tsc",
     "compile:watch": "npx nodemon",
