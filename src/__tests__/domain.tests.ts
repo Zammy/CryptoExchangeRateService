@@ -1,18 +1,50 @@
-import { DummyTestType } from "../Domain";
+import { UseCases, IExchangeRateDataSources } from "../Domain";
 
 describe("Domain tests", () => {
-  test("DummyTestType can increment ", () => {
-    const dummy = new DummyTestType(1);
+  const ethCode = 'eth';
+  const usdCode = 'usd';
+  const bgnCode = 'bgn';
+  let cryptoDataSource: IExchangeRateDataSources;
+  let fiatDataSource: IExchangeRateDataSources;
 
-    dummy.increment();
-
-    expect(dummy.get()).toBe(2);
+  beforeEach(() => {
+    cryptoDataSource = (new class MockData implements IExchangeRateDataSources {
+      getExchangeRate(currencyCode: string): number {
+        if (currencyCode === ethCode)
+          return 40;
+        if (currencyCode === usdCode)
+          return 1000;
+        return 0;
+      }
+      hasCurrency(currencyCode: string): boolean {
+        return currencyCode === ethCode || currencyCode === usdCode;
+      }
+    });
+    fiatDataSource = (new class MockData implements IExchangeRateDataSources {
+      getExchangeRate(currencyCode: string): number {
+        if (currencyCode === bgnCode)
+          return 2;
+        return 0;
+      }
+      hasCurrency(currencyCode: string): boolean {
+        return currencyCode === bgnCode;
+      }
+    });
   });
-  test("DummyTestType failing test ", () => {
-    const dummy = new DummyTestType(1);
 
-    dummy.increment();
-
-    expect(dummy.get()).toBe(1);
+  test("UseCases.CalculateCryptoExchangeRate is exchanging correctly with crypto source only", () => {
+    expect(UseCases.CalculateCryptoExchangeRate(cryptoDataSource, fiatDataSource, ethCode, usdCode)).toBe(25);
   });
+
+  test("UseCases.CalculateCryptoExchangeRate is exchanging correctly with fiat source", () => {
+    expect(UseCases.CalculateCryptoExchangeRate(cryptoDataSource, fiatDataSource, ethCode, bgnCode)).toBe(50);
+  });
+
+  test("UseCases.CalculateCryptoExchangeRate is return 0 if no code in fiat data source", () => {
+    expect(UseCases.CalculateCryptoExchangeRate(cryptoDataSource, fiatDataSource, ethCode, 'xxx')).toBe(0);
+  })
+
+  test("UseCases.CalculateCryptoExchangeRate is return 0 if no code in crypto data source", () => {
+    expect(UseCases.CalculateCryptoExchangeRate(cryptoDataSource, fiatDataSource, 'xxx', bgnCode)).toBe(0);
+  })
 });
