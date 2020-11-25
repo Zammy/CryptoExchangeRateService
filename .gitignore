@@ -107,3 +107,9 @@ dist
 
 #Build directory should not be part of source control
 build/
+
+#Remove cache
+cache/
+
+#Remove test covarage directory
+/coverage
