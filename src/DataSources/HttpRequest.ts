@@ -3,7 +3,7 @@ import * as https from 'https';
 import { URL } from "url";
 
 export class HttpRequest {
-    static async get(url: string, params?: Map<string, string>): Promise<any> {
+    static async get(url: string, params?: Map<string, string>): Promise<string> {
 
         const urlObj = new URL(url);
         if (params) {
@@ -22,9 +22,7 @@ export class HttpRequest {
                 });
 
                 response.on('end', () => {
-                    //TODO: error checking when parsing?
-                    let result = JSON.parse(responseString);
-                    resolve(result);
+                    resolve(responseString);
                 });
             };
 

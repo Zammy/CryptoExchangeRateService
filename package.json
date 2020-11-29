@@ -5,6 +5,7 @@
   "main": "src/index.ts",
   "scripts": {
     "test": "jest",
+    "test:compile" : "npm run compile && npm run test",
     "test:watch": "jest --watch",
     "run": "node build/index.js",
     "compile": "tsc",
