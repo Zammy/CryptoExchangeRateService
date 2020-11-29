@@ -1,54 +1,52 @@
 import { Config } from "../Config";
-import * as express from 'express';
 import { Application } from "express";
-import { CoinGeckoCacheDataSource, CoinGeckoDataSource, CurrencyLayerCacheDataSource, CurrencyLayerDataSource } from "../DataSources";
-import { CoinGeckoRepository, CurrencyLayerRepository } from "../Repositories";
-import { UseCases } from "../UseCases";
+import { IExchangeRateRepository, IRepository, UseCases } from "../UseCases";
 
-const coingeckoFilename = "coingecko.json";
-const currencyLayerFilename = "currency_layer.json";
 
 export class ExchangeController {
-    private app: Application;
     private syncDate: Date;
-    private coinGeckoRepo: CoinGeckoRepository;
-    private currencyLayerRepo: CurrencyLayerRepository;
+    private syncIntervalId?: NodeJS.Timeout;
 
     getSyncDate(): Date {
         return this.syncDate;
     }
 
-    constructor(private config: Config) {
-        //TODO: should be injected?
-        this.app = express.default();
-
-        const coinGeckoCachePath = config.cacheFolder ? (config.cacheFolder + coingeckoFilename) : null;
-        const coinGeckoCacheSource = coinGeckoCachePath ? new CoinGeckoCacheDataSource(coinGeckoCachePath) : undefined;
-        const coinGeckoShouldUseCache = config.syncOnStartup ? undefined : coinGeckoCacheSource;
-        this.coinGeckoRepo = new CoinGeckoRepository(new CoinGeckoDataSource(), coinGeckoCacheSource, coinGeckoShouldUseCache);
-
-        const currencyLayerCachePath = config.cacheFolder ? (config.cacheFolder + currencyLayerFilename) : null;
-        const currencyLayerCacheSource = currencyLayerCachePath ? new CurrencyLayerCacheDataSource(currencyLayerCachePath) : undefined;
-        const currencyLayerShouldUseCache = config.syncOnStartup ? undefined : currencyLayerCacheSource;
-        this.currencyLayerRepo = new CurrencyLayerRepository(new CurrencyLayerDataSource(config.currencyLayerAPIKey), currencyLayerCacheSource, currencyLayerShouldUseCache);
-
-        this.setupRoute();
+    constructor(private readonly config: Config,
+        private readonly app: Application,
+        private readonly coinGeckoRepo: IRepository | IExchangeRateRepository,
+        private readonly currencyLayerRepo: IRepository | IExchangeRateRepository) {
     }
 
     async init() {
         await this.sync();
+        this.setupRoute();
     }
 
     listen() {
         this.app.listen(this.config.port, () => {
-            console.log("Server is listening");
+            console.log("ExchangeController:: Server is listening");
         });
     }
 
+    private syncWithTimeout(interval: number) {
+        let syncInterval = this.syncIntervalId;
+        this.syncIntervalId = setTimeout(() => {
+            console.log("ExchangeController:: Sync with timeout!");
+            this.sync();
+        }, interval);
+
+        if (syncInterval) {
+            clearTimeout(syncInterval);
+        }
+    }
+
     private async sync(forceLatests?: boolean) {
-        await UseCases.SynchronizeWithLatest(this.coinGeckoRepo, this.currencyLayerRepo, forceLatests);
+        if (this.config.syncInterval > 0) {
+            this.syncWithTimeout(this.config.syncInterval);
+        }
+        await UseCases.SynchronizeServicesWithLatest(this.coinGeckoRepo as IRepository, this.currencyLayerRepo as IRepository, forceLatests);
         this.syncDate = new Date();
-        console.log("SYNC!");
+        console.log("ExchangeController:: Both repositories were synced forceLatests:" + forceLatests);
     }
 
     private setupRoute() {
@@ -62,21 +60,36 @@ export class ExchangeController {
             }
 
             if (forceLatest) {
-                console.log("Forced latest");
+                console.log("ExchangeController/exchange::  Forced latest");
                 await this.sync(true);
             }
 
-            let exchangeRate = UseCases.CalculateCryptoExchangeRate(
-                this.coinGeckoRepo,
-                this.currencyLayerRepo,
-                crypto,
-                fiat
-            );
-            const lastUpdate = this.syncDate;
+            if (!UseCases.HasCurrencyCodeInRepository(this.coinGeckoRepo as IExchangeRateRepository, crypto)) {
+                res.status(400);
+                res.send({
+                    'success': false,
+                    error: `Crypto currency ${crypto} is not supported.`
+                });
+            } else if (!UseCases.HasCurrencyCodeInRepository(this.coinGeckoRepo as IExchangeRateRepository, fiat)
+                && !UseCases.HasCurrencyCodeInRepository(this.currencyLayerRepo as IExchangeRateRepository, fiat)) {
+                res.status(400);
+                res.send({
+                    'success': false,
+                    error: `Fiat currency ${fiat} is not supported.`
+                });
+            } else {
+                let exchangeRate = UseCases.CalculateCryptoExchangeRate(
+                    this.coinGeckoRepo as IExchangeRateRepository,
+                    this.currencyLayerRepo as IExchangeRateRepository,
+                    crypto,
+                    fiat
+                );
 
-            res.send({
-                'crypto': crypto, 'fiat': fiat, 'exchangeRate': exchangeRate, 'lastUpdate': lastUpdate
-            });
+                const lastUpdate = this.syncDate;
+                res.send({
+                    'success': true, 'crypto': crypto, 'fiat': fiat, 'exchangeRate': exchangeRate, 'lastUpdate': lastUpdate
+                });
+            }
         });
     }
 }

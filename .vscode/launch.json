@@ -24,30 +24,6 @@
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}/src/index.ts",
-            "preLaunchTask": "tsc: build - tsconfig.json",
-            "outFiles": [
-                "${workspaceFolder}/build/**/*.js"
-            ]
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Debug tests",
-            "env": {
-                "CI": "true"
-            },
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "program": "${workspaceRoot}/node_modules/jest/bin/jest.js",
-            "args": [
-                "test",
-                "--runInBand",
-                "--no-cache"
-            ],
-            "outFiles": [
-                "${workspaceFolder}/build/**/*.js"
-            ]
         }
     ]
 }

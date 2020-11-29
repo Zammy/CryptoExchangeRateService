@@ -8,6 +8,10 @@ export interface IRepository {
 const usdCode = 'usd';
 export class UseCases {
 
+    static HasCurrencyCodeInRepository(repo: IExchangeRateRepository, code: string): boolean {
+        return (repo.getExchangeRate(code)) ? true : false;
+    }
+
     static CalculateCryptoExchangeRate(cryptoRepo: IExchangeRateRepository, fiatRepo: IExchangeRateRepository, cryptoCode: string, fiatCode: string): number {
         const cryptoRate = cryptoRepo.getExchangeRate(cryptoCode);
         if (cryptoRate) {
@@ -24,7 +28,7 @@ export class UseCases {
         return 0;
     }
 
-    static async SynchronizeWithLatest(cryptoRepo: IRepository, fiatRepo: IRepository, forceLatest?: boolean) {
+    static async SynchronizeServicesWithLatest(cryptoRepo: IRepository, fiatRepo: IRepository, forceLatest?: boolean) {
         await Promise.all([cryptoRepo.load(forceLatest), fiatRepo.load(forceLatest)]);
     }
 }
