@@ -16,7 +16,7 @@ export class Config {
             jsonObj = input;
         }
         this.currencyLayerAPIKey = jsonObj['currencyLayerAPIKey'] as string;
-        this.port = jsonObj['port'] as number;
+        this.port = jsonObj['port'] as number || 3000;
         this.cacheFolder = jsonObj['cacheFolder'] as string;
         this.syncInterval = jsonObj['syncInterval'] as number;
         let syncOnStartup = jsonObj['syncOnStartup'];
