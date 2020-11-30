@@ -5,7 +5,7 @@
   "main": "src/index.ts",
   "scripts": {
     "test": "jest",
-    "test:compile" : "npm run compile && npm run test",
+    "test:compile": "npm run compile && npm run test",
     "test:watch": "jest --watch",
     "run": "node build/index.js",
     "compile": "tsc",
@@ -34,7 +34,6 @@
   },
   "homepage": "https://github.com/Zammy/CryptoExchangeRateService#readme",
   "devDependencies": {
-    "@luckbox/eslint-rules": "^3.1.0",
     "@types/express": "^4.17.9",
     "@types/jest": "^26.0.15",
     "@types/lodash": "^4.14.165",

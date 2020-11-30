@@ -4,16 +4,26 @@
     },
     "root": true,
     "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "module"
+    },
     "plugins": [
         "@typescript-eslint"
     ],
     "extends": [
         "eslint:recommended",
-        "plugin:@typescript-eslint/eslint-recommended",
-        "plugin:@typescript-eslint/recommended"
-        // "@luckbox/eslint-rules/typescript/backend.js"
+        "plugin:@typescript-eslint/eslint-recommended"
     ],
     "rules": {
-        "no-console": 1
+        "no-console": 0,
+        "node/no-missing-import": "off",
+        "node/no-unsupported-features/es-syntax": "off",
+        "node/no-missing-require": "off",
+        "node/no-unpublished-import": "off",
+        "no-undef": "off",
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "@typescript-eslint/no-unused-vars": "error",
+        "@typescript-eslint/explicit-module-boundary-types": "error"
     }
 }

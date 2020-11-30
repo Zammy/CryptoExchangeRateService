@@ -78,7 +78,7 @@ describe('ExchangeController', () => {
                 return 1;
             }
             return 0;
-        });;
+        });
         mock_currencyLayerRepo['load'] = jest.fn(() => Promise.resolve());
         mock_app['get'] = jest.fn();
         exchangeController = new ExchangeController(config, mock_app, mock_coinGeckoRepo, mock_currencyLayerRepo);
@@ -113,7 +113,7 @@ describe('ExchangeController', () => {
                 return 1;
             }
             return 0;
-        });;
+        });
         mock_currencyLayerRepo['load'] = jest.fn(() => Promise.resolve());
         mock_app['get'] = jest.fn();
         exchangeController = new ExchangeController(config, mock_app, mock_coinGeckoRepo, mock_currencyLayerRepo);
@@ -152,7 +152,7 @@ describe('ExchangeController', () => {
                 return 1;
             }
             return 0;
-        });;
+        });
         mock_currencyLayerRepo['load'] = jest.fn(() => Promise.resolve());
         mock_currencyLayerRepo['getExchangeRate'] = jest.fn(() => {
             return 0;

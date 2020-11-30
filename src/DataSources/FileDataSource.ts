@@ -9,7 +9,7 @@ export default class FileDataSource {
         return fsPromises.readFile(this.fileName, { encoding: "utf-8" });
     }
 
-    async persistCache(data: string) {
+    async persistCache(data: string): Promise<void> {
         const folderPath = path.dirname(this.fileName);
         await fsPromises.mkdir(folderPath, { recursive: true });
         return fsPromises.writeFile(this.fileName, data, { flag: 'w' })

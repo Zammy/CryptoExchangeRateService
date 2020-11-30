@@ -15,7 +15,11 @@ export class CurrencyLayerDataSource implements IDataSource<CurrencyLayerJsonDat
         ]);
 
         const rawData = await HttpRequest.get('http://api.currencylayer.com/live', params);
-        const { success, timestamp, source, quotes } = JSON.parse(rawData);//TODO: error checking?
+        const {
+            // success,
+            // timestamp,
+            // source,
+            quotes } = JSON.parse(rawData);//TODO: error checking?
         const data = quotes as CurrencyLayerJsonData;
 
         console.log("Fetched latest from CurrencyLayerAPI");

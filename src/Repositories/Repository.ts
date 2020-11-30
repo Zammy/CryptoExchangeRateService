@@ -12,7 +12,7 @@ export abstract class Repository<D, T extends IDataSource<D>, S extends IPersist
 
     constructor(private readonly apiDataSource: T, private readonly persistenceDataSource?: S, private readonly cacheDataSource?: CacheDataSource<D>) { }
 
-    async load(noCache?: boolean) {
+    async load(noCache?: boolean): Promise<void> {
         if (this.cacheDataSource && !noCache) {
             let dataOrNull = await this.cacheDataSource.load();
             if (dataOrNull) {
@@ -23,7 +23,7 @@ export abstract class Repository<D, T extends IDataSource<D>, S extends IPersist
         await this.loadFromApi();
     }
 
-    private async loadFromApi() {
+    private async loadFromApi(): Promise<void> {
         this.data = await this.apiDataSource.load();
         if (this.persistenceDataSource) {
             await this.persistenceDataSource.persist(this.data);

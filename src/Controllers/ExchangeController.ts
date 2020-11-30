@@ -17,12 +17,12 @@ export class ExchangeController {
         private readonly currencyLayerRepo: IRepository | IExchangeRateRepository) {
     }
 
-    async init() {
+    async init(): Promise<void> {
         await this.sync();
         this.setupRoute();
     }
 
-    listen() {
+    listen(): void {
         this.app.listen(this.config.port, () => {
             console.log("ExchangeController:: Server is listening");
         });

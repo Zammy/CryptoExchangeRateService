@@ -1,4 +1,4 @@
-import { IDataSource, IPersistentDataSource } from ".";
+import { IPersistentDataSource } from ".";
 import FileDataSource from "./FileDataSource";
 
 export class CacheDataSource<T> implements IPersistentDataSource<T> {
@@ -8,7 +8,7 @@ export class CacheDataSource<T> implements IPersistentDataSource<T> {
         this.fileDataSource = new FileDataSource(cacheFileName);
     }
 
-    async persist(data: T) {
+    async persist(data: T): Promise<void> {
         return this.fileDataSource.persistCache(JSON.stringify(data));
     }
 
@@ -19,7 +19,7 @@ export class CacheDataSource<T> implements IPersistentDataSource<T> {
                     const data = JSON.parse(cacheData) as T;
                     resolve(data);
                 })
-                .catch((e: Error) => {
+                .catch(() => {
                     resolve(null);
                 })
                 .finally();

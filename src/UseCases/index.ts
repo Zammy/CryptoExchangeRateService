@@ -28,7 +28,7 @@ export class UseCases {
         return 0;
     }
 
-    static async SynchronizeServicesWithLatest(cryptoRepo: IRepository, fiatRepo: IRepository, forceLatest?: boolean) {
+    static async SynchronizeServicesWithLatest(cryptoRepo: IRepository, fiatRepo: IRepository, forceLatest?: boolean): Promise<void> {
         await Promise.all([cryptoRepo.load(forceLatest), fiatRepo.load(forceLatest)]);
     }
 }
